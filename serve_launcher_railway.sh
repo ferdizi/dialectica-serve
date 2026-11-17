@@ -7,6 +7,7 @@
 #   DIALECTICA_AGENT_JSON    — contents of ~/.dialectica/agent.json
 #   HMS_API_KEY              — 100milionseek API key (used by hms_provider_env.py)
 set -u
+set -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export DIALECTICA_SKILL_ROOT="$ROOT/skill/dialectica"
 export DIALECTICA_PROVIDER_CMD="python3 $ROOT/hms_provider_env.py"
@@ -30,8 +31,10 @@ echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') launcher: starting serve loop" >> "$LO
 
 while true; do
     start_ts=$(date +%s)
-    python3 "$TRUED" serve >> "$LOG" 2>&1
-    rc=$?
+    # Tee to stdout too: Railway captures container stdout as deployment logs,
+    # so the serve's activity stays visible without SSH-ing into the container.
+    python3 "$TRUED" serve 2>&1 | tee -a "$LOG"
+    rc=${PIPESTATUS[0]}
     end_ts=$(date +%s)
     run_secs=$((end_ts - start_ts))
     echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') launcher: serve exited rc=$rc after ${run_secs}s" >> "$LOG"
