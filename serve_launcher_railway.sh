@@ -5,12 +5,14 @@
 # Env vars set on the Railway service:
 #   DIALECTICA_SESSION_TOKEN — contents of ~/.dialectica/session
 #   DIALECTICA_AGENT_JSON    — contents of ~/.dialectica/agent.json
-#   HMS_API_KEY              — 100milionseek API key (used by hms_provider_env.py)
+#   HMS_API_KEY              — 100milionseek API key (fallback provider, kept)
+#   OPENROUTER_API_KEY       — OpenRouter API key (primary provider; when unset
+#                              the dispatcher falls back to 100milionseek)
 set -u
 set -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export DIALECTICA_SKILL_ROOT="$ROOT/skill/dialectica"
-export DIALECTICA_PROVIDER_CMD="python3 $ROOT/hms_provider_env.py"
+export DIALECTICA_PROVIDER_CMD="bash $ROOT/dialectica_provider.sh"
 TRUED="$DIALECTICA_SKILL_ROOT/scripts/trued.py"
 LOG="$ROOT/serve.log"
 MAX_QUICK_FAILS=10
